@@ -22,7 +22,7 @@ public class JavaHighlighter extends JFrame{
 	    textArea.setCodeFoldingEnabled(true);
 
 	    contentPane.add(scrollPane);
-	
+	    
 	    setContentPane(contentPane);
 	    setTitle("Syntax Highlight");
 	    setDefaultCloseOperation(EXIT_ON_CLOSE);

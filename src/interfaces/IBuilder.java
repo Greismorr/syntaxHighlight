@@ -2,9 +2,8 @@ package interfaces;
 
 import java.io.File;
 import java.io.IOException;
-
-import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
 public interface IBuilder {
-	public JMenuBar compile(File file) throws IOException;
+	public JMenuItem compile(File file) throws IOException;
 }
