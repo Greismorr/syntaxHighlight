@@ -20,7 +20,7 @@ import interfaces.IAbstractFactory;
 import interfaces.IBuilder;
 
 public class Main {
-	public static URL[] loadJars(Hashtable<String, String> factoryNames) {
+	public static URL[] loadJars(Hashtable<String, String> factoryNames){
 		File pluginDir = new File("./plugins");
 	  	String[] plugins = pluginDir.list();
 	  	URL[] jars = new URL[plugins.length];
@@ -31,7 +31,7 @@ public class Main {
 		  		String pathToString = jars[i].toString();
 		  		String pluginName = pathToString.substring(pathToString.lastIndexOf('/') + 1).replace(".jar", "");
 		  		String pluginType = pluginName.substring(0, pluginName.length() - 7).toLowerCase();
-	    	 
+		  		
 		  		factoryNames.put(pluginType, pluginName);
 			}catch(MalformedURLException error){
 				error.printStackTrace();
@@ -41,8 +41,16 @@ public class Main {
 	  	return jars;
 	}
 	
+	public static void removeCurrentCompileButton(JMenu actionsMenu){
+		for(int i = 0; i < actionsMenu.getItemCount(); i++) {
+			if(actionsMenu.getItem(i).getText() == "Compile") {
+				actionsMenu.remove(i);
+			}
+		}
+	}
+	
 	public static void main(String []args) throws Exception{
-		JFrame initialFrame = new JFrame();
+		JFrame mainFrame = new JFrame();
 	    RSyntaxTextArea textArea = new RSyntaxTextArea(20, 60);
 	    RTextScrollPane scrollPane = new RTextScrollPane(textArea);
 		JPanel contentPane = new JPanel(new BorderLayout());
@@ -56,7 +64,6 @@ public class Main {
 				int fileSelected = fileChooser.showOpenDialog(fileChooser);
 			  
 				if(fileSelected == JFileChooser.APPROVE_OPTION){
-					System.out.println(fileSelected);
 					File fileToOpen = fileChooser.getSelectedFile();
 				  	Hashtable<String, String> factoryNames = new Hashtable<String, String>();
 				 
@@ -75,20 +82,15 @@ public class Main {
 									.getDeclaredConstructor().newInstance();
 							IBuilder builder = factory.createBuilder();
 							
-							initialFrame.dispose();
-							JFrame SyntaxFrame = factory.createHighlighter(fileToOpen);
+							mainFrame.dispose();
 							
-							for(int i = 0; i < actionsMenu.getItemCount(); i++) {
-								if(actionsMenu.getItem(i).getText() == "Compile") {
-									actionsMenu.remove(i);
-								}
-							}
-							
+							JFrame highlightFrame = factory.createHighlighter(fileToOpen);
+							removeCurrentCompileButton(actionsMenu);
 							actionsMenu.add(builder.compile(fileToOpen));
-							SyntaxFrame.setJMenuBar(menuBar);
+							highlightFrame.setJMenuBar(menuBar);
 							
 					  		SwingUtilities.invokeLater(() -> {
-					  			SyntaxFrame.setVisible(true);
+					  			highlightFrame.setVisible(true);
 					  		});
 						}catch (Exception e1){
 							e1.printStackTrace();
@@ -103,15 +105,15 @@ public class Main {
 		actionsMenu.add(openFileButton);
 	    contentPane.add(scrollPane);
 	    menuBar.add(actionsMenu);
-	    initialFrame.setJMenuBar(menuBar);
-	    initialFrame.setContentPane(contentPane);
-	    initialFrame.setTitle("Syntax Highlight");
-	    initialFrame.setDefaultCloseOperation(3);
-	    initialFrame.pack();
-	    initialFrame.setLocationRelativeTo(null);
+	    mainFrame.setJMenuBar(menuBar);
+	    mainFrame.setContentPane(contentPane);
+	    mainFrame.setTitle("Syntax Highlight");
+	    mainFrame.setDefaultCloseOperation(3);
+	    mainFrame.pack();
+	    mainFrame.setLocationRelativeTo(null);
 	    
   		SwingUtilities.invokeLater(() -> {
-  			initialFrame.setVisible(true);
+  			mainFrame.setVisible(true);
   		});
 	}
 }
