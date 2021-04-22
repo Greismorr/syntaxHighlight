@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -49,8 +50,13 @@ public class Main {
 		}
 	}
 	
+	public static String firstLetterToLowerCase(String str) {
+		return str.substring(0, 1).toLowerCase() + str.substring(1);
+	}
+	
+	static JFrame mainFrame = new JFrame();
+	
 	public static void main(String []args) throws Exception{
-		JFrame mainFrame = new JFrame();
 	    RSyntaxTextArea textArea = new RSyntaxTextArea(20, 60);
 	    RTextScrollPane scrollPane = new RTextScrollPane(textArea);
 		JPanel contentPane = new JPanel(new BorderLayout());
@@ -73,24 +79,28 @@ public class Main {
 				  	URL[] jars = loadJars(factoryNames);
 				  	
 				  	if(factoryNames.containsKey(fileType)) {
-				  		URLClassLoader ulc = new URLClassLoader(jars);
-				  		IAbstractFactory factory;
+				  		URLClassLoader classLoader = new URLClassLoader(jars);
+				  		IAbstractFactory factorySingleton;
 				  		
 						try{
-							factory = (IAbstractFactory) Class.forName(factoryNames.get(fileType).substring(0, 1).toLowerCase()
-									+ factoryNames.get(fileType).substring(1) + "." + factoryNames.get(fileType), true, ulc)
-									.getDeclaredConstructor().newInstance();
-							IBuilder builder = factory.createBuilder();
+							String factoryName = factoryNames.get(fileType);
+							String className = firstLetterToLowerCase(factoryName) + "." + factoryName;
+							Class metaFactory = Class.forName(className, true, classLoader);
+							Method getInstanceMethod = metaFactory.getDeclaredMethod("getInstance");
+							
+							factorySingleton = (IAbstractFactory)getInstanceMethod.invoke(metaFactory);
+							
+							IBuilder builder = factorySingleton.createBuilder();
 							
 							mainFrame.dispose();
-							
-							JFrame highlightFrame = factory.createHighlighter(fileToOpen);
 							removeCurrentCompileButton(actionsMenu);
+							
+							mainFrame = factorySingleton.createHighlighter(fileToOpen);
 							actionsMenu.add(builder.compile(fileToOpen));
-							highlightFrame.setJMenuBar(menuBar);
+							mainFrame.setJMenuBar(menuBar);
 							
 					  		SwingUtilities.invokeLater(() -> {
-					  			highlightFrame.setVisible(true);
+					  			mainFrame.setVisible(true);
 					  		});
 						}catch (Exception e1){
 							e1.printStackTrace();
@@ -108,7 +118,7 @@ public class Main {
 	    mainFrame.setJMenuBar(menuBar);
 	    mainFrame.setContentPane(contentPane);
 	    mainFrame.setTitle("Syntax Highlight");
-	    mainFrame.setDefaultCloseOperation(3);
+	    mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    mainFrame.pack();
 	    mainFrame.setLocationRelativeTo(null);
 	    
